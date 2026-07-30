@@ -1,6 +1,7 @@
 package org.example.backend.services;
 
 import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.entities.Game;
 import org.example.backend.entities.Transaction;
@@ -18,6 +19,7 @@ public class TransactionService {
     private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
 
+    @Transactional
     public Transaction processTransaction(User user, Long amount, TransactionType type, @Nullable Game game) {
         long newBalance = switch (type) {
             case WAGER -> {
