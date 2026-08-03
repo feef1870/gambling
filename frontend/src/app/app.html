@@ -1,0 +1,17 @@
+<nav class="navbar">
+  <div class="logo">Blackjack Engine</div>
+
+  <div class="user-info">
+    @if (currentUser()) {
+      <span class="username">{{ currentUser()!.username }}</span>
+      <span class="balance badge">{{ currentUser()!.balance }} Coins</span>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    } @else {
+      <span class="loading">Loading profile...</span>
+    }
+  </div>
+</nav>
+
+<main>
+  <router-outlet></router-outlet>
+</main>

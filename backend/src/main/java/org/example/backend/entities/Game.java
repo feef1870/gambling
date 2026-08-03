@@ -35,7 +35,7 @@ public class Game {
     @Positive(message = "Bet amount must be greater than zero")
     private Long betAmount;
 
-    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "status")
     @NotNull(message = "Game status can not be null")
     private GameStatus status;

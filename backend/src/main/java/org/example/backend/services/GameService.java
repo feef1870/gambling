@@ -66,7 +66,7 @@ public class GameService {
 
     @Transactional
     public Game processPlayerAction(Long gameId, String userId, String action) {
-        Game game = gameRepository.findById(gameId)
+        Game game = gameRepository.findByIdWithLock(gameId)
                 .orElseThrow(() -> new AppException("Game not found", "GAME_NOT_FOUND", HttpStatus.NOT_FOUND));
 
         if (!game.getUser().getId().equals(userId)) {

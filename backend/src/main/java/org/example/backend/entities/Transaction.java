@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.example.backend.enums.TransactionType;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 
@@ -32,7 +34,7 @@ public class Transaction {
     @Positive(message = "Transaction amount must be greater than zero")
     private Long amount;
 
-    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "type")
     @NotNull(message = "Transaction type can not be null")
     private TransactionType type;

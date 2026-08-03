@@ -1,0 +1,88 @@
+<div class="game-container">
+
+  <div class="play-area">
+    @if (gameState()) {
+      <div class="hand-container dealer">
+        <div class="hand-info">
+          <h3>Dealer</h3>
+          <span class="total badge">{{ gameState()!.dealerTotal || '?' }}</span>
+        </div>
+        <div class="cards-display">
+          @for (card of gameState()!.dealerHand; track card.suit + card.rank) {
+            <div class="card" [class.red]="card.suit === 'HEARTS' || card.suit === 'DIAMONDS'">
+              <div class="card-corner top-left">
+                <div>{{ getRankSymbol(card.rank) }}</div>
+                <div>{{ getSuitSymbol(card.suit) }}</div>
+              </div>
+              <div class="card-suit-big">{{ getSuitSymbol(card.suit) }}</div>
+              <div class="card-corner bottom-right">
+                <div>{{ getRankSymbol(card.rank) }}</div>
+                <div>{{ getSuitSymbol(card.suit) }}</div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="hand-container player">
+        <div class="cards-display">
+          @for (card of gameState()!.playerHand; track card.suit + card.rank) {
+            <div class="card" [class.red]="card.suit === 'HEARTS' || card.suit === 'DIAMONDS'">
+              <div class="card-corner top-left">
+                <div>{{ getRankSymbol(card.rank) }}</div>
+                <div>{{ getSuitSymbol(card.suit) }}</div>
+              </div>
+              <div class="card-suit-big">{{ getSuitSymbol(card.suit) }}</div>
+              <div class="card-corner bottom-right">
+                <div>{{ getRankSymbol(card.rank) }}</div>
+                <div>{{ getSuitSymbol(card.suit) }}</div>
+              </div>
+            </div>
+          }
+        </div>
+        <div class="hand-info">
+          <h3>You</h3>
+          <span class="total badge">{{ gameState()!.playerTotal }}</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="controls-area">
+
+    @if (!gameState() || gameState()!.status !== 'IN_PROGRESS') {
+
+      @if (gameState()) {
+        <div class="result-message">
+          <h2>{{ gameState()!.status.replace('_', ' ') }}</h2>
+        </div>
+      }
+
+      <div class="bet-controls">
+        <div class="input-group">
+          <input type="number" [value]="betAmount()" (input)="updateBet($event)" min="1" step="10" />
+          <span class="currency">Coins</span>
+        </div>
+        <button class="primary-btn" [disabled]="isLoading()" (click)="startGame()">
+          @if (gameState()) { Play Again } @else { Deal Hand }
+        </button>
+      </div>
+
+    } @else {
+
+      @if (isLoading()) {
+        <div class="loading-indicator">
+          <span>{{ loadingMessage() }}</span>
+        </div>
+      }
+
+      @if (!isLoading()) {
+        <div class="action-buttons">
+          <button class="action-btn hit" (click)="action('HIT')">Hit</button>
+          <button class="action-btn stand" (click)="action('STAND')">Stand</button>
+        </div>
+      }
+    }
+
+  </div>
+</div>
