@@ -61,3 +61,31 @@ main {
   display: flex;
   justify-content: center;
 }
+
+.admin-link {
+  background-color: transparent;
+  color: var(--gold, #d4af37);
+  border: 1px solid var(--gold, #d4af37);
+  padding: 6px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease-in-out;
+  margin-left: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-link:hover {
+  background-color: var(--gold, #d4af37);
+  color: #121212;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+  cursor: pointer;
+}
+
+.admin-link:active {
+  transform: scale(0.95);
+}

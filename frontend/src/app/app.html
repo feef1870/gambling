@@ -1,5 +1,8 @@
 <nav class="navbar">
   <div class="logo">Blackjack Engine</div>
+  @if (isAdmin()) {
+    <a routerLink="/admin" class="admin-link">Admin Panel</a>
+  }
 
   <div class="user-info">
     @if (userService.currentUser()) {

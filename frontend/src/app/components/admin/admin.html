@@ -1,0 +1,32 @@
+<div class="admin-container">
+  <h2>Admin Control Panel</h2>
+
+  <table class="admin-table">
+    <thead>
+    <tr>
+      <th>User ID</th>
+      <th>Username</th>
+      <th>Current Balance</th>
+      <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+      @for (user of users(); track user.id) {
+        <tr>
+          <td>{{ user.id }}</td>
+          <td>{{ user.username || 'Unknown' }}</td>
+          <td>{{ user.balance }} coins</td>
+          <td class="action-cell">
+            <input
+              type="number"
+              [(ngModel)]="addAmount()[user.id]"
+              placeholder="Amount"
+              min="1"
+            />
+            <button (click)="addMoney(user.id)" class="btn-primary">Add Money</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

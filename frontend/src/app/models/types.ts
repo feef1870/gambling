@@ -21,3 +21,10 @@ export interface UserResponse {
   username: string;
   balance: number;
 }
+
+export interface User {
+  id: string;
+  username: string;
+  balance: number;
+  createdAt: Date;
+}
