@@ -11,16 +11,11 @@ import Keycloak from 'keycloak-js';
   styleUrl: './app.css',
 })
 export class App implements OnInit {
-  private userService = inject(UserService);
+  userService = inject(UserService);
   private keycloak = inject(Keycloak);
 
-  currentUser = signal<UserResponse | null>(null);
-
   ngOnInit() {
-    this.userService.getCurrentUser().subscribe({
-      next: (user) => this.currentUser.set(user),
-      error: (err) => console.error('Failed to fetch user', err),
-    });
+    this.userService.refreshUser();
   }
 
   logout() {

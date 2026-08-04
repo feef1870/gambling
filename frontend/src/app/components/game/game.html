@@ -9,7 +9,7 @@
         </div>
         <div class="cards-display">
           @for (card of gameState()!.dealerHand; track card.suit + card.rank) {
-            <div class="card" [class.red]="card.suit === 'HEARTS' || card.suit === 'DIAMONDS'">
+            <div class="card" animate.enter="slide-in" [class.red]="card.suit === 'HEARTS' || card.suit === 'DIAMONDS'">
               <div class="card-corner top-left">
                 <div>{{ getRankSymbol(card.rank) }}</div>
                 <div>{{ getSuitSymbol(card.suit) }}</div>
@@ -27,7 +27,7 @@
       <div class="hand-container player">
         <div class="cards-display">
           @for (card of gameState()!.playerHand; track card.suit + card.rank) {
-            <div class="card" [class.red]="card.suit === 'HEARTS' || card.suit === 'DIAMONDS'">
+            <div class="card" animate.enter="slide-in" [class.red]="card.suit === 'HEARTS' || card.suit === 'DIAMONDS'">
               <div class="card-corner top-left">
                 <div>{{ getRankSymbol(card.rank) }}</div>
                 <div>{{ getSuitSymbol(card.suit) }}</div>
@@ -60,7 +60,7 @@
 
       <div class="bet-controls">
         <div class="input-group">
-          <input type="number" [value]="betAmount()" (input)="updateBet($event)" min="1" step="10" />
+          <input type="number" [value]="betAmount()" (input)="updateBet($event)" />
           <span class="currency">Coins</span>
         </div>
         <button class="primary-btn" [disabled]="isLoading()" (click)="startGame()">

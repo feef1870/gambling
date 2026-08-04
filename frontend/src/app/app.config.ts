@@ -21,7 +21,6 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
 
     provideHttpClient(withInterceptors([includeBearerTokenInterceptor])),
-
     provideKeycloak({
       config: {
         url: 'http://localhost:8443',
@@ -34,7 +33,6 @@ export const appConfig: ApplicationConfig = {
       },
     }),
 
-    // 4. Bind the condition to the interceptor
     {
       provide: INCLUDE_BEARER_TOKEN_INTERCEPTOR_CONFIG,
       useValue: [apiCondition],

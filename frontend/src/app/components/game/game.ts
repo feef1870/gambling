@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { GameService } from '../../services/game';
 import { GameResponse } from '../../models/types';
 import { delay } from 'rxjs';
+import { UserService } from '../../services/user';
 
 @Component({
   selector: 'app-game',
@@ -11,6 +12,7 @@ import { delay } from 'rxjs';
 })
 export class GameComponent {
   private gameService = inject(GameService);
+  private userService = inject(UserService);
 
   gameState = signal<GameResponse | null>(null);
   betAmount = signal<number>(100);
@@ -26,18 +28,24 @@ export class GameComponent {
     this.isLoading.set(true);
     this.loadingMessage.set('Shuffling deck...');
 
-    this.gameService.startGame(this.betAmount())
+    this.gameService
+      .startGame(this.betAmount())
       .pipe(delay(600))
       .subscribe({
-      next: (res) => {
-        this.gameState.set(res);
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Failed to start game', err);
-        this.isLoading.set(false);
-      },
-    });
+        next: (res) => {
+          this.gameState.set(res);
+          this.isLoading.set(false);
+          this.userService.refreshUser();
+        },
+        error: (err) => {
+          console.error('Failed to start game', err);
+          this.isLoading.set(false);
+        },
+      });
+  }
+
+  private wait(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   action(type: string) {
@@ -45,27 +53,54 @@ export class GameComponent {
     if (!gameId) return;
 
     this.isLoading.set(true);
+    this.loadingMessage.set(type === 'STAND' ? 'Dealer is playing...' : 'Dealing card...');
 
-    if (type === 'STAND') {
-      this.loadingMessage.set("Dealer is playing...");
-    } else {
-      this.loadingMessage.set("Dealing card...");
-    }
-
-    const delayTime = type === 'STAND' ? 1500 : 500;
-
-    this.gameService.processAction(gameId, type)
-      .pipe(delay(delayTime))
-      .subscribe({
-      next: (res) => {
-        this.gameState.set(res);
-        this.isLoading.set(false);
+    this.gameService.processAction(gameId, type).subscribe({
+      next: async (res) => {
+        if (res.status !== 'IN_PROGRESS') {
+          await this.animateDealerTurn(res);
+        } else {
+          this.gameState.set(res);
+          this.isLoading.set(false);
+          this.userService.refreshUser();
+        }
       },
       error: (err) => {
         console.error(`Failed to process ${type}`, err);
         this.isLoading.set(false);
       },
     });
+  }
+
+  async animateDealerTurn(res: GameResponse) {
+    const finalHand = res.dealerHand;
+
+    const visibleHand = finalHand.slice(0, 2);
+
+    this.gameState.set({
+      ...res,
+      dealerHand: [...visibleHand],
+      dealerTotal: null,
+      status: 'IN_PROGRESS',
+    });
+
+    for (let i = 2; i < finalHand.length; i++) {
+      await this.wait(1000);
+      visibleHand.push(finalHand[i]);
+
+      this.gameState.set({
+        ...res,
+        dealerHand: [...visibleHand],
+        dealerTotal: null,
+        status: 'IN_PROGRESS',
+      });
+    }
+
+    await this.wait(800);
+
+    this.gameState.set(res);
+    this.isLoading.set(false);
+    this.userService.refreshUser();
   }
 
   getSuitSymbol(suit: string): string {
