@@ -28,7 +28,9 @@ public class GameController {
         String userId = jwt.getSubject();
         Game game = gameService.startGame(userId, request.betAmount());
 
-        return ResponseEntity.ok(GameMapper.toResponse(game));
+        String comment = gameService.getAiCommentForGame(game);
+
+        return ResponseEntity.ok(GameMapper.toResponse(game, comment));
     }
 
     @PostMapping("/{id}/action")
@@ -40,6 +42,8 @@ public class GameController {
         String userId = jwt.getSubject();
         Game game = gameService.processPlayerAction(gameId, userId, request.action());
 
-        return ResponseEntity.ok(GameMapper.toResponse(game));
+        String comment = gameService.getAiCommentForGame(game);
+
+        return ResponseEntity.ok(GameMapper.toResponse(game, comment));
     }
 }

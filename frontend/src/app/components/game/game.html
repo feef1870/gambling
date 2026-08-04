@@ -3,10 +3,19 @@
   <div class="play-area">
     @if (gameState()) {
       <div class="hand-container dealer">
-        <div class="hand-info">
-          <h3>Dealer</h3>
-          <span class="total badge">{{ gameState()!.dealerTotal || '?' }}</span>
+        <div class="dealer-top-row">
+          <div class="hand-info">
+            <h3>Dealer</h3>
+            <span class="total badge">{{ gameState()!.dealerTotal || '?' }}</span>
+          </div>
+
+          @if (gameState()!.dealerComment) {
+            <div class="dealer-chat-bubble" animate.enter="slide-in">
+              <p>"{{ gameState()!.dealerComment }}"</p>
+            </div>
+          }
         </div>
+
         <div class="cards-display">
           @for (card of gameState()!.dealerHand; track card.suit + card.rank) {
             <div class="card" animate.enter="slide-in" [class.red]="card.suit === 'HEARTS' || card.suit === 'DIAMONDS'">

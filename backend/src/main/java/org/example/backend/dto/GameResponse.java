@@ -12,6 +12,7 @@ public record GameResponse(
         List<Card> playerHand,
         int playerTotal,
         List<Card> dealerHand,
-        Integer dealerTotal
+        Integer dealerTotal,
+        String dealerComment
 ) {
 }

@@ -26,6 +26,7 @@ public class GameService {
     private final UserRepository userRepository;
     private final TransactionService transactionService;
     private final GameRepository gameRepository;
+    private final AiDealerService aiDealerService;
 
     @Transactional
     public Game startGame(String userId, Long betAmount) {
@@ -151,5 +152,18 @@ public class GameService {
         }
 
         return total;
+    }
+
+    public String getAiCommentForGame(Game game) {
+        if (game.getStatus() == GameStatus.IN_PROGRESS) {
+            return null;
+        }
+
+        return aiDealerService.getDealerComment(
+                game.getStatus().name(),
+                game.getState().playerTotal(),
+                game.getState().dealerTotal(),
+                game.getBetAmount().intValue()
+        );
     }
 }

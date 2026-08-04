@@ -12,7 +12,7 @@ public class GameMapper {
 
     private GameMapper() {}
 
-    public static GameResponse toResponse(Game game) {
+    public static GameResponse toResponse(Game game, String dealerComment) {
         GameState state = game.getState();
         boolean isInProgress = game.getStatus() == GameStatus.IN_PROGRESS;
 
@@ -31,7 +31,12 @@ public class GameMapper {
                 state.playerHand(),
                 state.playerTotal(),
                 displayDealerHand,
-                displayDealerTotal
+                displayDealerTotal,
+                dealerComment
         );
+    }
+
+    public static GameResponse toResponse(Game game) {
+        return toResponse(game, null);
     }
 }

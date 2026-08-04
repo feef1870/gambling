@@ -13,6 +13,7 @@ export interface GameResponse {
   playerTotal: number;
   dealerHand: Card[];
   dealerTotal: number | null;
+  dealerComment?: string;
 }
 
 export interface UserResponse {
