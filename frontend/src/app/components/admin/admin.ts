@@ -15,12 +15,38 @@ export class AdminComponent implements OnInit {
   users = signal<User[]>([]);
   addAmount = signal<{ [key: string]: number }>({});
 
+  currentPage = signal<number>(0);
+  totalPages = signal<number>(0);
+  searchTerm = signal<string>('');
+
   ngOnInit() {
     this.loadUsers();
   }
 
   loadUsers() {
-    this.adminService.getUsers().subscribe((data) => this.users.set(data));
+    this.adminService.getUsers(this.searchTerm(), this.currentPage(), 10).subscribe((page) => {
+      this.users.set(page.content);
+      this.totalPages.set(page.totalPages);
+    });
+  }
+
+  onSearch() {
+    this.currentPage.set(0);
+    this.loadUsers();
+  }
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages() - 1) {
+      this.currentPage.update((p) => p + 1);
+      this.loadUsers();
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage() > 0) {
+      this.currentPage.update((p) => p - 1);
+      this.loadUsers();
+    }
   }
 
   addMoney(userId: string) {

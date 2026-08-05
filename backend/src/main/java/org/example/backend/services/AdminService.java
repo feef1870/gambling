@@ -6,6 +6,9 @@ import org.example.backend.entities.User;
 import org.example.backend.enums.TransactionType;
 import org.example.backend.exception.AppException;
 import org.example.backend.repositories.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +20,14 @@ public class AdminService {
     private final UserRepository userRepository;
     private final TransactionService transactionService;
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public Page<User> getUsers(String search, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        if (search == null || search.trim().isEmpty()) {
+            return userRepository.findAll(pageable);
+        }
+
+        return userRepository.findByUsernameContainingIgnoreCase(search.trim(), pageable);
     }
 
     @Transactional
