@@ -17,4 +17,8 @@ export class UserService {
       error: (err) => console.error('Failed to fetch user', err),
     });
   }
+
+  claimLaborWage() {
+    return this.http.post<void>('http://localhost:8080/api/labor/claim', {});
+  }
 }

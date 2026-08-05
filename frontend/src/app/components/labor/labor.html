@@ -1,0 +1,22 @@
+<div class="labor-container">
+  <h2>Hard Labor</h2>
+  <p>You suck, that's why you're here.</p>
+  <p>Click the block 20 times to earn some money.</p>
+
+  <div class="work-area">
+    <div
+      class="work-block"
+      [class.shake]="isShaking()"
+      [class.disabled]="isWorking()"
+      (click)="work()"
+      (animationend)="stopShake()">
+
+      <span class="click-count">{{ clicks() }} / 20</span>
+
+    </div>
+  </div>
+
+  @if (isWorking()) {
+    <p class="processing-text">Processing wage payout...</p>
+  }
+</div>
