@@ -35,6 +35,9 @@ public class User {
     @NotNull(message = "(users table) Creation date can not be null")
     private Instant createdAt;
 
+    @Column(name = "last_labor_claim")
+    private Instant lastLaborClaim;
+
     @PrePersist
     public void prePersist() {
         if (this.createdAt == null) {
