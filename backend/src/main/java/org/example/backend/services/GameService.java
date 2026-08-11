@@ -30,7 +30,7 @@ public class GameService {
 
     @Transactional
     public Game startGame(String userId, Long betAmount) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdWithLock(userId)
                 .orElseThrow(() -> new AppException("User not found", "USER_NOT_FOUND", HttpStatus.NOT_FOUND));
 
         transactionService.processTransaction(user, betAmount, TransactionType.WAGER, null);
