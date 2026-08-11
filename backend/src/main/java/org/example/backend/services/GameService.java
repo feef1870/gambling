@@ -53,8 +53,6 @@ public class GameService {
 
         if (playerTotal == 21) {
             game.setStatus(GameStatus.PLAYER_BLACKJACK);
-            long payout = betAmount + (long) (betAmount * 1.5);
-            transactionService.processTransaction(user, payout, TransactionType.PAYOUT, game);
         } else {
             game.setStatus(GameStatus.IN_PROGRESS);
         }
@@ -62,7 +60,14 @@ public class GameService {
         GameState state = new GameState(deck, playerHand, dealerHand, playerTotal, dealerTotal, "INITIAL");
         game.setState(state);
 
-        return gameRepository.save(game);
+        Game savedGame = gameRepository.save(game);
+
+        if (savedGame.getStatus() == GameStatus.PLAYER_BLACKJACK) {
+            long payout = betAmount + (long) (betAmount * 1.5);
+            transactionService.processTransaction(user, payout, TransactionType.PAYOUT, savedGame);
+        }
+
+        return savedGame;
     }
 
     @Transactional
@@ -116,16 +121,22 @@ public class GameService {
 
         if (dealerTotal > 21 || playerTotal > dealerTotal) {
             game.setStatus(GameStatus.PLAYER_WON);
-            transactionService.processTransaction(game.getUser(), game.getBetAmount() * 2, TransactionType.PAYOUT, game);
         } else if (playerTotal == dealerTotal) {
             game.setStatus(GameStatus.PUSH);
-            transactionService.processTransaction(game.getUser(), game.getBetAmount(), TransactionType.REFUND, game);
         } else {
             game.setStatus(GameStatus.DEALER_WON);
         }
 
         game.setState(new GameState(deck, playerHand, dealerHand, playerTotal, dealerTotal, "FINISHED"));
-        return gameRepository.save(game);
+        Game savedGame = gameRepository.save(game);
+
+        if (savedGame.getStatus() == GameStatus.PLAYER_WON) {
+            transactionService.processTransaction(savedGame.getUser(), savedGame.getBetAmount() * 2, TransactionType.PAYOUT, savedGame);
+        } else if (savedGame.getStatus() == GameStatus.PUSH) {
+            transactionService.processTransaction(savedGame.getUser(), savedGame.getBetAmount(), TransactionType.REFUND, savedGame);
+        }
+
+        return savedGame;
     }
 
     private Card drawCard(List<Card> deck) {
