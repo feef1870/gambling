@@ -6,6 +6,7 @@ import org.example.backend.entities.Card;
 import org.example.backend.entities.Game;
 import org.example.backend.entities.GameState;
 import org.example.backend.entities.User;
+import org.example.backend.enums.GamePhase;
 import org.example.backend.enums.GameStatus;
 import org.example.backend.enums.Rank;
 import org.example.backend.enums.TransactionType;
@@ -57,7 +58,7 @@ public class GameService {
             game.setStatus(GameStatus.IN_PROGRESS);
         }
 
-        GameState state = new GameState(deck, playerHand, dealerHand, playerTotal, dealerTotal, "INITIAL");
+        GameState state = new GameState(deck, playerHand, dealerHand, playerTotal, dealerTotal, GamePhase.INITIAL);
         game.setState(state);
 
         Game savedGame = gameRepository.save(game);
@@ -95,11 +96,7 @@ public class GameService {
                 game.setStatus(GameStatus.DEALER_WON);
             }
 
-            game.setState(new GameState(deck, playerHand, state.dealerHand(), playerTotal, state.dealerTotal(), "PLAYER_TURN"));
-
-            if (game.getStatus() == GameStatus.DEALER_WON) {
-                return gameRepository.save(game);
-            }
+            game.setState(new GameState(deck, playerHand, state.dealerHand(), playerTotal, state.dealerTotal(), GamePhase.PLAYER_TURN));
             return gameRepository.save(game);
 
         } else if ("STAND".equalsIgnoreCase(action)) {
@@ -127,7 +124,7 @@ public class GameService {
             game.setStatus(GameStatus.DEALER_WON);
         }
 
-        game.setState(new GameState(deck, playerHand, dealerHand, playerTotal, dealerTotal, "FINISHED"));
+        game.setState(new GameState(deck, playerHand, dealerHand, playerTotal, dealerTotal, GamePhase.FINISHED));
         Game savedGame = gameRepository.save(game);
 
         if (savedGame.getStatus() == GameStatus.PLAYER_WON) {

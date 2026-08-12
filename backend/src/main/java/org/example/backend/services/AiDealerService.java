@@ -16,10 +16,6 @@ public class AiDealerService {
     private final RestClient restClient;
 
     public String getDealerComment(String status, int playerTotal, int dealerTotal, int betAmount) {
-        if ("IN_PROGRESS".equals(status)) {
-            return null;
-        }
-
         try {
             Map<String, Object> payload = Map.of(
                     "status", status,

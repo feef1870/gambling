@@ -1,5 +1,7 @@
 package org.example.backend.entities;
 
+import org.example.backend.enums.GamePhase;
+
 import java.util.List;
 
 public record GameState(
@@ -8,6 +10,6 @@ public record GameState(
         List<Card> dealerHand,
         int playerTotal,
         int dealerTotal,
-        String phase
+        GamePhase phase
 ) {
 }

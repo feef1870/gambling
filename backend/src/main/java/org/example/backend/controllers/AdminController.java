@@ -1,5 +1,6 @@
 package org.example.backend.controllers;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.AddBalanceRequest;
 import org.example.backend.dto.UserResponse;
@@ -32,7 +33,7 @@ public class AdminController {
     @PostMapping("/users/{userId}/add-balance")
     public ResponseEntity<Void> addBalance(
             @PathVariable("userId") String userId,
-            @RequestBody AddBalanceRequest request) {
+            @Valid @RequestBody AddBalanceRequest request) {
 
         adminService.addBalance(userId, request.amount());
         return ResponseEntity.ok().build();
