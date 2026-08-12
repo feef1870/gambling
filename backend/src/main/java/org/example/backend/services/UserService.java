@@ -3,10 +3,10 @@ package org.example.backend.services;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.entities.User;
 import org.example.backend.enums.TransactionType;
-import org.example.backend.exception.AppException;
+import org.example.backend.exception.UserCreationConflictException;
+import org.example.backend.exception.UserNotFoundException;
 import org.example.backend.repositories.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -29,10 +29,7 @@ public class UserService {
                 return createNewUser(keycloakId, username);
             } catch (DataIntegrityViolationException e) {
                 return userRepository.findById(keycloakId)
-                        .orElseThrow(() -> new AppException(
-                                "User creation conflict",
-                                "USER_CONFLICT",
-                                HttpStatus.INTERNAL_SERVER_ERROR));
+                        .orElseThrow(UserCreationConflictException::new);
             }
         });
     }
@@ -50,6 +47,6 @@ public class UserService {
 
     public User getCurrentUser(String userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new AppException("User not found", "USER_NOT_FOUND", HttpStatus.NOT_FOUND));
+                .orElseThrow(UserNotFoundException::new);
     }
 }

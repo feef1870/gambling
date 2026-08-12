@@ -2,15 +2,13 @@ package org.example.backend.services;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.example.backend.dto.UserResponse;
 import org.example.backend.entities.User;
 import org.example.backend.enums.TransactionType;
-import org.example.backend.exception.AppException;
+import org.example.backend.exception.UserNotFoundException;
 import org.example.backend.repositories.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 
@@ -33,7 +31,7 @@ public class AdminService {
     @Transactional
     public void addBalance(String userId, Long amount) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException("User not found", "USER_NOT_FOUND", HttpStatus.NOT_FOUND));
+                .orElseThrow(UserNotFoundException::new);
 
         transactionService.processTransaction(user, amount, TransactionType.ADMINS_BLESSING, null);
     }

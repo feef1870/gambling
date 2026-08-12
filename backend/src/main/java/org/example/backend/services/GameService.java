@@ -10,11 +10,10 @@ import org.example.backend.enums.GamePhase;
 import org.example.backend.enums.GameStatus;
 import org.example.backend.enums.Rank;
 import org.example.backend.enums.TransactionType;
-import org.example.backend.exception.AppException;
+import org.example.backend.exception.*;
 import org.example.backend.repositories.GameRepository;
 import org.example.backend.repositories.UserRepository;
 import org.example.backend.util.DeckUtil;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -32,7 +31,7 @@ public class GameService {
     @Transactional
     public Game startGame(String userId, Long betAmount) {
         User user = userRepository.findByIdWithLock(userId)
-                .orElseThrow(() -> new AppException("User not found", "USER_NOT_FOUND", HttpStatus.NOT_FOUND));
+                .orElseThrow(UserNotFoundException::new);
 
         transactionService.processTransaction(user, betAmount, TransactionType.WAGER, null);
 
@@ -74,13 +73,13 @@ public class GameService {
     @Transactional
     public Game processPlayerAction(Long gameId, String userId, String action) {
         Game game = gameRepository.findByIdWithLock(gameId)
-                .orElseThrow(() -> new AppException("Game not found", "GAME_NOT_FOUND", HttpStatus.NOT_FOUND));
+                .orElseThrow(GameNotFoundException::new);
 
         if (!game.getUser().getId().equals(userId)) {
-            throw new AppException("Unauthorized access to game", "UNAUTHORIZED", HttpStatus.FORBIDDEN);
+            throw new NotGameOwnerException();
         }
         if (game.getStatus() != GameStatus.IN_PROGRESS) {
-            throw new AppException("Game is already finished", "INVALID_STATE", HttpStatus.BAD_REQUEST);
+            throw new InvalidGameStateException();
         }
 
         GameState state = game.getState();
@@ -102,7 +101,7 @@ public class GameService {
         } else if ("STAND".equalsIgnoreCase(action)) {
             return executeDealerTurn(game, deck, playerHand, playerTotal);
         } else {
-            throw new AppException("Invalid action", "INVALID_ACTION", HttpStatus.BAD_REQUEST);
+            throw new InvalidGameActionException();
         }
     }
 
@@ -138,7 +137,7 @@ public class GameService {
 
     private Card drawCard(List<Card> deck) {
         if (deck.isEmpty()) {
-            throw new AppException("Deck is empty", "EMPTY_DECK", HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new IllegalStateException("Deck is empty");
         }
         return deck.removeLast();
     }

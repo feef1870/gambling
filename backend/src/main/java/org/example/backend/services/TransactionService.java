@@ -7,11 +7,10 @@ import org.example.backend.entities.Game;
 import org.example.backend.entities.Transaction;
 import org.example.backend.entities.User;
 import org.example.backend.enums.TransactionType;
-import org.example.backend.exception.AppException;
 import org.example.backend.exception.InsufficientFundsException;
+import org.example.backend.exception.InvalidAmountException;
 import org.example.backend.repositories.TransactionRepository;
 import org.example.backend.repositories.UserRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,11 +23,7 @@ public class TransactionService {
     @Transactional
     public Transaction processTransaction(User user, Long amount, TransactionType type, @Nullable Game game) {
         if (amount == null || amount <= 0) {
-            throw new AppException(
-                    "Amount must be positive",
-                    "INVALID_AMOUNT",
-                    HttpStatus.BAD_REQUEST
-            );
+            throw new InvalidAmountException();
         }
 
         long newBalance = switch (type) {

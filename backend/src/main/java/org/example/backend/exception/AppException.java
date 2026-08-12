@@ -2,7 +2,7 @@ package org.example.backend.exception;
 
 import org.springframework.http.HttpStatus;
 
-public class AppException extends RuntimeException {
+public abstract class AppException extends RuntimeException {
     private final String errorCode;
     private final HttpStatus status;
 
