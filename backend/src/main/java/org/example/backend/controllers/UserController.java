@@ -27,11 +27,7 @@ public class UserController {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException("User not found", "USER_NOT_FOUND", HttpStatus.NOT_FOUND));
 
-        UserResponse response = new UserResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getBalance()
-        );
+        UserResponse response = UserResponse.from(user);
 
         return ResponseEntity.ok(response);
     }

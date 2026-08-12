@@ -1,11 +1,15 @@
 package org.example.backend.services;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.example.backend.dto.DealerCommentResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AiDealerService {
@@ -24,17 +28,17 @@ public class AiDealerService {
                     "bet_amount", betAmount
             );
 
-            Map response = restClient.post()
+            DealerCommentResponse response = restClient.post()
                     .uri("/api/dealer/comment")
                     .body(payload)
                     .retrieve()
-                    .body(Map.class);
+                    .body(DealerCommentResponse.class);
 
-            return response != null ? (String) response.get("comment") : "No comment.";
+            return response != null ? response.comment() : null;
 
-        } catch (Exception e) {
-            System.err.println("An error occurred " + e.getMessage());
-            return "An error occurred";
+        } catch (RestClientException e) {
+            log.warn("AI dealer request failed", e);
+            return null;
         }
     }
 }
