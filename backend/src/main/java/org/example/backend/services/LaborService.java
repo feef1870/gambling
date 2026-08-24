@@ -24,7 +24,7 @@ public class LaborService {
 
     @Transactional
     public void payWage(String userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdWithLock(userId)
                 .orElseThrow(UserNotFoundException::new);
 
         Instant now = Instant.now();
