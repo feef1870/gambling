@@ -1,10 +1,9 @@
-package org.example.backend;
+package org.example.backend.util;
 
 
 import org.example.backend.entities.Card;
 import org.example.backend.enums.Rank;
 import org.example.backend.enums.Suit;
-import org.example.backend.util.DeckUtil;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;

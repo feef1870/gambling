@@ -1,4 +1,4 @@
-package org.example.backend;
+package org.example.backend.services;
 
 import org.example.backend.entities.Game;
 import org.example.backend.entities.Transaction;
@@ -8,7 +8,6 @@ import org.example.backend.exception.InsufficientFundsException;
 import org.example.backend.exception.InvalidAmountException;
 import org.example.backend.repositories.TransactionRepository;
 import org.example.backend.repositories.UserRepository;
-import org.example.backend.services.TransactionService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
