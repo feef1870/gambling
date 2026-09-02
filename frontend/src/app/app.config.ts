@@ -10,9 +10,12 @@ import {
   provideKeycloak,
 } from 'keycloak-angular';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { environment } from '../environments/environment';
+
+const escapedApiUrl = environment.apiUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const apiCondition = createInterceptorCondition<IncludeBearerTokenCondition>({
-  urlPattern: /^(http:\/\/localhost:8080)(\/.*)?$/i,
+  urlPattern: new RegExp(`^${escapedApiUrl}(/.*)?$`, 'i'),
 });
 
 export const appConfig: ApplicationConfig = {
@@ -23,9 +26,9 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([includeBearerTokenInterceptor])),
     provideKeycloak({
       config: {
-        url: 'http://localhost:8443',
-        realm: 'gambling',
-        clientId: 'test-client',
+        url: environment.keycloak.url,
+        realm: environment.keycloak.realm,
+        clientId: environment.keycloak.clientId,
       },
       initOptions: {
         onLoad: 'login-required',

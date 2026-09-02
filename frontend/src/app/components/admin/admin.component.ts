@@ -1,13 +1,13 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { AdminService } from '../../services/admin';
+import { AdminService } from '../../services/admin.service';
 import { User } from '../../models/types';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-admin',
   imports: [FormsModule],
-  templateUrl: './admin.html',
-  styleUrl: './admin.css',
+  templateUrl: './admin.component.html',
+  styleUrl: './admin.component.css',
 })
 export class AdminComponent implements OnInit {
   private adminService = inject(AdminService);

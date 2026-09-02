@@ -1,14 +1,14 @@
 import { Component, inject, signal } from '@angular/core';
-import { GameService } from '../../services/game';
+import { GameService } from '../../services/game.service';
 import { GameResponse } from '../../models/types';
 import { delay } from 'rxjs';
-import { UserService } from '../../services/user';
+import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'app-game',
   imports: [],
-  templateUrl: './game.html',
-  styleUrl: './game.css',
+  templateUrl: './game.component.html',
+  styleUrl: './game.component.css',
 })
 export class GameComponent {
   private gameService = inject(GameService);

@@ -1,11 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
-import { UserService } from '../../services/user';
+import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'app-labor',
   imports: [],
-  templateUrl: './labor.html',
-  styleUrl: './labor.css',
+  templateUrl: './labor.component.html',
+  styleUrl: './labor.component.css',
 })
 export class LaborComponent {
   private userService = inject(UserService);
