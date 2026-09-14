@@ -1,8 +1,34 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { GameService } from '../../services/game.service';
-import { GameResponse } from '../../models/types';
-import { delay } from 'rxjs';
+import { GameAction, GameResponse, GameStatus } from '../../models/types';
+import { concat, delay, finalize, map, Observable, of, switchMap, takeUntil, tap } from 'rxjs';
 import { UserService } from '../../services/user.service';
+import { ToastService } from '../../services/toast.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { extractErrorMessage } from '../../util/errors';
+
+const SUIT_SYMBOLS: Record<string, string> = {
+  HEARTS: '♥',
+  DIAMONDS: '♦',
+  CLUBS: '♣',
+  SPADES: '♠',
+};
+
+const RANK_SYMBOLS: Record<string, string> = {
+  ACE: 'A',
+  TWO: '2',
+  THREE: '3',
+  FOUR: '4',
+  FIVE: '5',
+  SIX: '6',
+  SEVEN: '7',
+  EIGHT: '8',
+  NINE: '9',
+  TEN: '10',
+  JACK: 'J',
+  QUEEN: 'Q',
+  KING: 'K',
+};
 
 @Component({
   selector: 'app-game',
@@ -11,13 +37,30 @@ import { UserService } from '../../services/user.service';
   styleUrl: './game.component.css',
 })
 export class GameComponent {
-  private gameService = inject(GameService);
-  private userService = inject(UserService);
+  private readonly gameService = inject(GameService);
+  private readonly userService = inject(UserService);
+  private readonly toast = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  gameState = signal<GameResponse | null>(null);
-  betAmount = signal<number>(100);
-  isLoading = signal<boolean>(false);
-  loadingMessage = signal<string>('');
+  readonly gameState = signal<GameResponse | null>(null);
+  readonly betAmount = signal(100);
+  readonly isLoading = signal(false);
+  readonly isRevealing = signal(false);
+  readonly loadingMessage = signal('');
+
+  readonly betValidationMessage = computed<string | null>(() => {
+    const amount = this.betAmount();
+    if (!Number.isInteger(amount) || amount <= 0) {
+      return 'Bet must be a positive whole number';
+    }
+
+    const balance = this.userService.currentUser()?.balance;
+    if (balance !== undefined && amount > balance) {
+      return `You only have ${balance} coins`;
+    }
+
+    return null;
+  });
 
   updateBet(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -25,110 +68,108 @@ export class GameComponent {
   }
 
   startGame() {
+    if (this.isLoading() || this.isRevealing()) {
+      return;
+    }
+    if (this.betValidationMessage() !== null) {
+      return;
+    }
+
     this.isLoading.set(true);
     this.loadingMessage.set('Shuffling deck...');
 
     this.gameService
       .startGame(this.betAmount())
-      .pipe(delay(600))
+      .pipe(delay(600), takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res) => {
-          this.gameState.set(res);
+        next: (game) => {
+          this.gameState.set(game);
           this.isLoading.set(false);
           this.userService.refreshUser();
         },
         error: (err) => {
-          console.error('Failed to start game', err);
+          this.toast.show(extractErrorMessage(err, 'Could not start the game.'));
           this.isLoading.set(false);
         },
       });
   }
 
-  private wait(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  action(type: string) {
-    const gameId = this.gameState()?.id;
-    if (!gameId) return;
+  action(type: GameAction) {
+    const game = this.gameState();
+    if (!game || game.status !== 'IN_PROGRESS') {
+      return;
+    }
+    if (this.isLoading() || this.isRevealing()) {
+      return;
+    }
 
     this.isLoading.set(true);
     this.loadingMessage.set(type === 'STAND' ? 'Dealer is playing...' : 'Dealing card...');
 
-    this.gameService.processAction(gameId, type).subscribe({
-      next: async (res) => {
-        if (res.status !== 'IN_PROGRESS') {
-          await this.animateDealerTurn(res);
-        } else {
-          this.gameState.set(res);
+    this.gameService
+      .processAction(game.id, type)
+      .pipe(
+        switchMap((res) => {
+          if (res.status === 'IN_PROGRESS') {
+            return of(res);
+          }
+
+          this.isRevealing.set(true);
+          return this.revealDealerHand(res).pipe(finalize(() => this.isRevealing.set(false)));
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (game) => {
+          this.gameState.set(game);
           this.isLoading.set(false);
           this.userService.refreshUser();
-        }
-      },
-      error: (err) => {
-        console.error(`Failed to process ${type}`, err);
-        this.isLoading.set(false);
-      },
-    });
+        },
+        error: (err) => {
+          this.toast.show(extractErrorMessage(err, 'That move failed.'));
+          this.isLoading.set(false);
+        },
+      });
   }
 
-  async animateDealerTurn(res: GameResponse) {
-    const finalHand = res.dealerHand;
+  private revealDealerHand(finalGame: GameResponse): Observable<GameResponse> {
+    const steps: Observable<null>[] = [
+      of(null).pipe(tap(() => this.showPartialHand(finalGame, 2))),
+      ...finalGame.dealerHand.slice(2).map((_, index) =>
+        of(null).pipe(
+          delay(1000),
+          tap(() => this.showPartialHand(finalGame, 3 + index)),
+        ),
+      ),
+    ];
+    return concat(...steps).pipe(
+      delay(800),
+      map(() => finalGame),
+    );
+  }
 
-    const visibleHand = finalHand.slice(0, 2);
-
+  private showPartialHand(finalGame: GameResponse, count: number) {
     this.gameState.set({
-      ...res,
-      dealerHand: [...visibleHand],
+      ...finalGame,
+      dealerHand: finalGame.dealerHand.slice(0, count),
       dealerTotal: null,
-      status: 'IN_PROGRESS',
+      dealerComment: null,
     });
-
-    for (let i = 2; i < finalHand.length; i++) {
-      await this.wait(1000);
-      visibleHand.push(finalHand[i]);
-
-      this.gameState.set({
-        ...res,
-        dealerHand: [...visibleHand],
-        dealerTotal: null,
-        status: 'IN_PROGRESS',
-      });
-    }
-
-    await this.wait(800);
-
-    this.gameState.set(res);
-    this.isLoading.set(false);
-    this.userService.refreshUser();
   }
 
   getSuitSymbol(suit: string): string {
-    const symbols: { [key: string]: string } = {
-      HEARTS: '♥',
-      DIAMONDS: '♦',
-      CLUBS: '♣',
-      SPADES: '♠',
-    };
-    return symbols[suit] || '?';
+    return SUIT_SYMBOLS[suit] ?? '?';
   }
 
   getRankSymbol(rank: string): string {
-    const ranks: { [key: string]: string } = {
-      ACE: 'A',
-      TWO: '2',
-      THREE: '3',
-      FOUR: '4',
-      FIVE: '5',
-      SIX: '6',
-      SEVEN: '7',
-      EIGHT: '8',
-      NINE: '9',
-      TEN: '10',
-      JACK: 'J',
-      QUEEN: 'Q',
-      KING: 'K',
-    };
-    return ranks[rank] || rank;
+    return RANK_SYMBOLS[rank] ?? rank;
+  }
+
+  isRed(suit: string): boolean {
+    return suit === 'HEARTS' || suit === 'DIAMONDS';
+  }
+
+  formatStatus(status: GameStatus): string {
+    return status.replaceAll('_', ' ');
   }
 }

@@ -1,24 +1,24 @@
 <div class="game-container">
 
   <div class="play-area">
-    @if (gameState()) {
+    @if (gameState(); as game) {
       <div class="hand-container dealer">
         <div class="dealer-top-row">
           <div class="hand-info">
             <h3>Dealer</h3>
-            <span class="total badge">{{ gameState()!.dealerTotal || '?' }}</span>
+            <span class="total badge">{{ game.dealerTotal ?? '?' }}</span>
           </div>
 
-          @if (gameState()!.dealerComment) {
+          @if (game.dealerComment) {
             <div class="dealer-chat-bubble" animate.enter="slide-in">
-              <p>"{{ gameState()!.dealerComment }}"</p>
+              <p>"{{ game.dealerComment }}"</p>
             </div>
           }
         </div>
 
         <div class="cards-display">
-          @for (card of gameState()!.dealerHand; track card.suit + card.rank) {
-            <div class="card" animate.enter="slide-in" [class.red]="card.suit === 'HEARTS' || card.suit === 'DIAMONDS'">
+          @for (card of game.dealerHand; track card.suit + card.rank) {
+            <div class="card" animate.enter="slide-in" [class.red]="isRed(card.suit)">
               <div class="card-corner top-left">
                 <div>{{ getRankSymbol(card.rank) }}</div>
                 <div>{{ getSuitSymbol(card.suit) }}</div>
@@ -35,8 +35,8 @@
 
       <div class="hand-container player">
         <div class="cards-display">
-          @for (card of gameState()!.playerHand; track card.suit + card.rank) {
-            <div class="card" animate.enter="slide-in" [class.red]="card.suit === 'HEARTS' || card.suit === 'DIAMONDS'">
+          @for (card of game.playerHand; track card.suit + card.rank) {
+            <div class="card" animate.enter="slide-in" [class.red]="isRed(card.suit)">
               <div class="card-corner top-left">
                 <div>{{ getRankSymbol(card.rank) }}</div>
                 <div>{{ getSuitSymbol(card.suit) }}</div>
@@ -51,47 +51,82 @@
         </div>
         <div class="hand-info">
           <h3>You</h3>
-          <span class="total badge">{{ gameState()!.playerTotal }}</span>
+          <span class="total badge">{{ game.playerTotal }}</span>
         </div>
       </div>
     }
   </div>
 
   <div class="controls-area">
-
-    @if (!gameState() || gameState()!.status !== 'IN_PROGRESS') {
-
-      @if (gameState()) {
-        <div class="result-message">
-          <h2>{{ gameState()!.status.replace('_', ' ') }}</h2>
-        </div>
-      }
-
-      <div class="bet-controls">
-        <div class="input-group">
-          <input type="number" [value]="betAmount()" (input)="updateBet($event)" />
-          <span class="currency">Coins</span>
-        </div>
-        <button class="primary-btn" [disabled]="isLoading()" (click)="startGame()">
-          @if (gameState()) { Play Again } @else { Deal Hand }
-        </button>
-      </div>
-
-    } @else {
-
-      @if (isLoading()) {
+    @if (gameState(); as game) {
+      @if (game.status === 'IN_PROGRESS') {
+        @if (isLoading()) {
+          <div class="loading-indicator">
+            <span>{{ loadingMessage() }}</span>
+          </div>
+        } @else {
+          <div class="action-buttons">
+            <button type="button" class="action-btn hit" (click)="action('HIT')">Hit</button>
+            <button type="button" class="action-btn stand" (click)="action('STAND')">Stand</button>
+          </div>
+        }
+      } @else if (isRevealing()) {
         <div class="loading-indicator">
           <span>{{ loadingMessage() }}</span>
         </div>
-      }
-
-      @if (!isLoading()) {
-        <div class="action-buttons">
-          <button class="action-btn hit" (click)="action('HIT')">Hit</button>
-          <button class="action-btn stand" (click)="action('STAND')">Stand</button>
+      } @else {
+        <div class="result-message">
+          <h2>{{ formatStatus(game.status) }}</h2>
         </div>
+
+        <div class="bet-controls">
+          <div class="input-group">
+            <input
+              type="number"
+              min="1"
+              step="1"
+              [value]="betAmount()"
+              (input)="updateBet($event)"
+            />
+            <span class="currency">Coins</span>
+          </div>
+          <button
+            type="button"
+            class="primary-btn"
+            [disabled]="isLoading() || isRevealing() || betValidationMessage() !== null"
+            (click)="startGame()">
+            Play Again
+          </button>
+        </div>
+
+        @if (betValidationMessage(); as message) {
+          <div class="bet-error">{{ message }}</div>
+        }
+      }
+    } @else {
+      <div class="bet-controls">
+        <div class="input-group">
+          <input
+            type="number"
+            min="1"
+            step="1"
+            [value]="betAmount()"
+            (input)="updateBet($event)"
+          />
+          <span class="currency">Coins</span>
+        </div>
+        <button
+          type="button"
+          class="primary-btn"
+          [disabled]="isLoading() || betValidationMessage() !== null"
+          (click)="startGame()">
+          Deal Hand
+        </button>
+      </div>
+
+      @if (betValidationMessage(); as message) {
+        <div class="bet-error">{{ message }}</div>
       }
     }
-
   </div>
 </div>
