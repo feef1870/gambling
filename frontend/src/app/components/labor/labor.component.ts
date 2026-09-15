@@ -1,5 +1,10 @@
 import { Component, inject, signal } from '@angular/core';
 import { UserService } from '../../services/user.service';
+import { ToastService } from '../../services/toast.service';
+import { finalize } from 'rxjs';
+import { extractErrorMessage } from '../../util/errors';
+
+const REQUIRED_CLICKS = 20;
 
 @Component({
   selector: 'app-labor',
@@ -8,34 +13,41 @@ import { UserService } from '../../services/user.service';
   styleUrl: './labor.component.css',
 })
 export class LaborComponent {
-  private userService = inject(UserService);
+  private readonly userService = inject(UserService);
+  private readonly toast = inject(ToastService);
 
-  clicks = signal<number>(0);
-  isShaking = signal<boolean>(false);
-  isWorking = signal<boolean>(false);
+  readonly clicks = signal(0);
+  readonly isShaking = signal(false);
+  readonly isWorking = signal(false);
 
   work() {
     if (this.isWorking()) return;
 
-    this.clicks.update(c => c + 1);
-
     this.isShaking.set(false);
     setTimeout(() => this.isShaking.set(true), 0);
 
-    if (this.clicks() >= 20) {
-      this.isWorking.set(true);
+    this.clicks.set(Math.min(this.clicks() + 1, REQUIRED_CLICKS));
 
-      this.userService.claimLaborWage().subscribe({
+    if (this.clicks() >= REQUIRED_CLICKS) {
+      this.claimWage();
+    }
+  }
+
+  private claimWage() {
+    this.isWorking.set(true);
+
+    this.userService
+      .claimLaborWage()
+      .pipe(finalize(() => this.isWorking.set(false)))
+      .subscribe({
         next: () => {
           this.clicks.set(0);
           this.userService.refreshUser();
-          this.isWorking.set(false);
         },
-        error: () => {
-          this.isWorking.set(false);
-        }
-      });
-    }
+        error: (err) => {
+          this.toast.show(extractErrorMessage(err, "Could not claim your wage"));
+        },
+      })
   }
 
   stopShake() {

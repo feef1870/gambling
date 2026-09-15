@@ -4,7 +4,8 @@
   <p>Click the block 20 times to earn some money.</p>
 
   <div class="work-area">
-    <div
+    <button
+      type="button"
       class="work-block"
       [class.shake]="isShaking()"
       [class.disabled]="isWorking()"
@@ -13,7 +14,7 @@
 
       <span class="click-count">{{ clicks() }} / 20</span>
 
-    </div>
+    </button>
   </div>
 
   @if (isWorking()) {
