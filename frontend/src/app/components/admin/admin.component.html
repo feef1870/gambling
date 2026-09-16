@@ -9,7 +9,7 @@
         (keyup.enter)="onSearch()"
         placeholder="Search by username..."
       />
-      <button (click)="onSearch()" class="btn-primary">Search</button>
+      <button type="button" (click)="onSearch()" class="btn-primary" [disabled]="isLoading()">Search</button>
     </div>
   </div>
 
@@ -31,11 +31,20 @@
           <td class="action-cell">
             <input
               type="number"
-              [(ngModel)]="addAmount()[user.id]"
-              placeholder="Amount"
               min="1"
+              step="1"
+              [ngModel]="amounts()[user.id] || null"
+              (ngModelChange)="setAmount(user.id, $event)"
+              [disabled]="isPending(user.id)"
+              placeholder="Amount"
             />
-            <button (click)="addMoney(user.id)" class="btn-primary">Add</button>
+            <button
+              type="button"
+              (click)="addMoney(user.id)"
+              class="btn-primary"
+              [disabled]="isPending(user.id)">
+              {{ isPending(user.id) ? "Adding" : "Add" }}
+            </button>
           </td>
         </tr>
       } @empty {
@@ -48,8 +57,9 @@
 
   <div class="pagination">
     <button
+      type="button"
       (click)="prevPage()"
-      [disabled]="currentPage() === 0"
+      [disabled]="isLoading() || currentPage() === 0"
       class="btn-secondary">
       Previous
     </button>
@@ -59,8 +69,9 @@
     </span>
 
     <button
+      type="button"
       (click)="nextPage()"
-      [disabled]="currentPage() >= totalPages() - 1"
+      [disabled]="isLoading() || currentPage() >= totalPages() - 1"
       class="btn-secondary">
       Next
     </button>
