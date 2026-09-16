@@ -27,7 +27,7 @@
   "oauth2DevicePollingInterval": 5,
   "enabled": true,
   "sslRequired": "external",
-  "registrationAllowed": false,
+  "registrationAllowed": true,
   "registrationEmailAsUsername": false,
   "rememberMe": false,
   "verifyEmail": false,
@@ -82,6 +82,15 @@
         "id": "54b6067a-ecec-4b58-bba9-94d412931402",
         "name": "uma_authorization",
         "description": "${role_uma_authorization}",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "4414605e-adcc-4fde-94ce-0db067a4aff6",
+        "attributes": {}
+      },
+      {
+        "id": "9d1d8b5a-3a11-4f2b-9f0e-6c2b9a5a1e2f",
+        "name": "admin",
+        "description": "Grants access to the in-app admin panel",
         "composite": false,
         "clientRole": false,
         "containerId": "4414605e-adcc-4fde-94ce-0db067a4aff6",
@@ -517,6 +526,55 @@
       }
     ]
   },
+  "users": [
+    {
+      "id": "b1a3e0c0-1111-4a2b-9c3d-0e4f5a6b7c8d",
+      "createdTimestamp": 1735689600000,
+      "username": "admin",
+      "enabled": true,
+      "totp": false,
+      "emailVerified": true,
+      "email": "admin@example.com",
+      "firstName": "Test",
+      "lastName": "Admin",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-gambling",
+        "admin"
+      ],
+      "clientRoles": {},
+      "groups": []
+    },
+    {
+      "id": "c2b4f1d1-2222-4b3c-8d4e-1f5a6b7c8d9e",
+      "createdTimestamp": 1735689600000,
+      "username": "user",
+      "enabled": true,
+      "totp": false,
+      "emailVerified": true,
+      "email": "user@example.com",
+      "firstName": "Test",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "user",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-gambling"
+      ],
+      "clientRoles": {},
+      "groups": []
+    }
+  ],
   "clients": [
     {
       "id": "8207173f-b836-414a-b299-5203fdd0b3d2",
@@ -831,7 +889,9 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "redirectUris": [],
+      "redirectUris": [
+        "http://localhost:4200/*"
+      ],
       "webOrigins": [
         "+"
       ],

@@ -238,3 +238,9 @@
   margin: 0;
   line-height: 1.3;
 }
+
+.bet-error {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
