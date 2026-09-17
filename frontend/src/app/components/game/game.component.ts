@@ -133,28 +133,23 @@ export class GameComponent {
   }
 
   private revealDealerHand(finalGame: GameResponse): Observable<GameResponse> {
-    const steps: Observable<null>[] = [
-      of(null).pipe(tap(() => this.showPartialHand(finalGame, 2))),
-      ...finalGame.dealerHand.slice(2).map((_, index) =>
-        of(null).pipe(
-          delay(1000),
-          tap(() => this.showPartialHand(finalGame, 3 + index)),
-        ),
-      ),
+    const steps: Observable<GameResponse>[] = [
+      of(this.partialGame(finalGame, 2)),
+      ...finalGame.dealerHand
+        .slice(2)
+        .map((_, index) => of(this.partialGame(finalGame, 3 + index)).pipe(delay(1000))),
+      of(finalGame).pipe(delay(800)),
     ];
-    return concat(...steps).pipe(
-      delay(800),
-      map(() => finalGame),
-    );
+    return concat(...steps);
   }
 
-  private showPartialHand(finalGame: GameResponse, count: number) {
-    this.gameState.set({
+  private partialGame(finalGame: GameResponse, count: number): GameResponse {
+    return {
       ...finalGame,
       dealerHand: finalGame.dealerHand.slice(0, count),
       dealerTotal: null,
       dealerComment: null,
-    });
+    };
   }
 
   getSuitSymbol(suit: string): string {
